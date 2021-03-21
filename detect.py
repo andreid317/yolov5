@@ -14,6 +14,7 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
 from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
+import numpy
 
 def detect(save_img=False):
     source, weights, view_img, save_txt, imgsz = opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
@@ -28,6 +29,9 @@ def detect(save_img=False):
     set_logging()
     device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
+
+    # Andrei Code: CSV
+    time_results = []
 
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
@@ -115,6 +119,10 @@ def detect(save_img=False):
             # Print time (inference + NMS)
             print(f'{s}Done. ({t2 - t1:.3f}s)')
 
+	    # Andrei Code
+            time_results.append(t2-t1)
+	    	
+
             # Stream results
             if view_img:
                 cv2.imshow(str(p), im0)
@@ -142,6 +150,11 @@ def detect(save_img=False):
         print(f"Results saved to {save_dir}{s}")
 
     print(f'Done. ({time.time() - t0:.3f}s)')
+    
+    #Andrei Code: to CSV
+    to_csv = numpy.asarray(time_results)
+    numpy.savetxt("performance-time.csv", to_csv, delimiter=",")
+
 
 
 if __name__ == '__main__':
